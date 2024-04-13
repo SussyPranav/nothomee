@@ -31,7 +31,7 @@ const parseText = (text) => {
   return parsedText;
 };
 
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "https://esm.run/@google/generative-ai";
 
 const MODEL_NAME = "gemini-1.0-pro";
 const API_KEY = "AIzaSyBCD4kC9VSFYccINuUiqAv0bk-TKjOH39Q";

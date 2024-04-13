@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gemini Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  </head>
+  <body>
+    <style>
+        @font-face {
+    font-family: "Google Sans";
+    src: url('/googlesans.woff2');
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all ease 0.5s;
+    font-family: "Google Sans", sans-serif;
+}
+::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    height: 100vh;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #111927;
+    background-image: 
+    radial-gradient(at 47% 33%, hsl(162.00, 77%, 40%) 0, transparent 59%), 
+    radial-gradient(at 82% 65%, hsl(218.00, 39%, 11%) 0, transparent 55%);
+    background-repeat: no-repeat;
+}
+
+.chatCard {
+    position: relative;
+    height: 500px;
+    padding-right: 5px;
+    width: 400px;
+    overflow-y: scroll;
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    background-color: rgba(47, 47, 61, 0.768);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.059);
+}
+
+.chatCard .head {
+    position: sticky;
+    top: 0;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #00000024;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.left {
+    padding-left: 10px;
+    width: 50%;
+    display: flex;
+    align-items: center;
+}
+
+.left .name {
+    margin-left: 10px;
+    margin-bottom: 5px;
+    font-size: 20px;
+}
+
+.fiftyper {
+    width: 50%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+}
+
+.fiftyper i {
+    margin-right: 30px;
+    font-size: 20px;
+}
+
+.fiftyper i:hover {
+    color: rgb(108, 255, 206);
+    cursor: pointer;
+}
+
+.fiftyper a {
+    color: black;
+}
+
+.message_area {
+    padding-bottom: 10px;
+    overflow-y: scroll;
+    max-height: calc(100% - 100px); /* Subtracting the height of head and input area */
+}
+
+.message {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+.user {
+    height: 32px;
+}
+
+.input_area {
+    position: sticky;
+    bottom: 0;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #00000024;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.message .text {
+    margin-left: 10px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.556);
+    border-radius: 15px;
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+}
+
+.input-area {
+    position: fixed;
+    bottom: 0;
+    z-index: 1;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #000000;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    margin-top: 10px;
+}
+
+.input-area input {
+    color: rgb(133, 130, 130);
+    height: 100%;
+    width: 80%;
+    padding: 10px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    border-radius: 15px;
+}
+
+.input-area .send {
+    height: 100%;
+    position: absolute;
+    width: 10%;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline: none;
+    color: rgb(133, 130, 130);
+    cursor: pointer;
+    background-color:rgba(133, 130, 130, 0.41);
+}
+
+.input-area .send:hover {
+    background-color: rgba(133, 130, 130, 0.767);
+    color: rgb(0, 0, 0);
+}
+
+.sending {
+    width: 100%;
+    height: 90%;
+    display: flex;
+}
+.loading {
+    position: absolute;
+    visibility: hidden;
+    color: white;
+    margin-left: 10px;
+    background-color: rgb(0, 0, 0);
+    width: 100%;
+    height: 100%;
+    left: 0;
+    display: flex; /* Add this line to make the dots visible */
+    align-items: center; /* Add this line to vertically center the dots */
+}
+
+.dot1, .dot2, .dot3 {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    background-color: white;
+    margin-left: 10px;
+    animation: fade 1s infinite;
+}
+
+@keyframes fade {
+    0% {
+        opacity: 1;
+    }
+    33% {
+        opacity: 0.5;
+    }
+    66% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.dot2 {
+    animation-delay: 0.33s;
+}
+
+.dot3 {
+    animation-delay: 0.66s;
+}
+    </style>
+    <div class="chatCard">
+      <div class="head">
+        <div class="left">
+          <div class="img"><img src="/logo.png" alt=""></div>
+        <div class="name">Gemini</div>
+        </div>
+        <div class="fiftyper">
+          <a href="https://github.com/adiyadav123" target="_blank"><i class="fa-brands fa-github-alt"></i></a>
+        </div>
+      </div>
+      <div class="message_area">
+        <div class="message ai-message">
+          <div class="img"><img src="/logo.png" alt=""></div>
+          <div class="text">Hello, I am Gemini. How can I help you?</div>
+        </div>
+        <!-- User Message Template -->
+        
+        
+      </div>
+      <div class="input-area">
+        <div class="loading">Gemini is typing <span class="dot1"></span> <span class="dot2"></span> <span class="dot3"></span></div>
+        <div class="sending">
+          <input type="text" placeholder="Type your message here" class="input" />
+        <button class="send"><i class="fa-regular fa-paper-plane"></i></button>
+        </div>
+      </div>
+        
+      </div>
+    </div>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+const button = document.querySelector(".send");
+const input = document.querySelector(".input");
+const output = document.querySelector(".ai-message");
+const message_area = document.querySelector(".message_area");
+const loader = document.querySelector(".loading");
+
+const genAi = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+
+button.addEventListener("click", async () => {
+  // ... existing code ...
+});
+
+input.addEventListener("keydown", (event) => {
+  if (event.keyCode === 13) {
+    event.preventDefault();
+    button.click();
+  }
+});
+
+button.addEventListener("click", async () => {
+  if (!input.value) return alert("Please enter a prompt");
+  var prompt = input.value;
+  message_area.innerHTML += `<div class="message user-message">
+  <div class="img"><img class="user" src="/my_face-removebg-preview.png" alt=""></div>
+  <div class="text">${prompt}</div>
+  </div>`;
+  loader.style.visibility = "visible";
+  message_area.scrollTop = message_area.scrollHeight; // Navigate to the bottom of message_area
+
+  const model = genAi.getGenerativeModel({ model: "gemini-pro" });
+  const chat = model.startChat({
+    history: [
+      {
+        role: "user",
+        parts:
+          "Who is your owner/creator?, Do you know?, You are created by Aditya. His github link is https://github.com/adiyadav123",
+      },
+      {
+        role: "model",
+        parts: "Okay I will do that. I will ask users to follow him on github.",
+      },
+      {
+        role: "user",
+        parts: "Who is Aditya?",
+      },
+      {
+        role: "model",
+        parts:
+          "I am created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer. In fact he created this Ai ChatBot names Gemini",
+      },
+      {
+        role: "user",
+        parts: "What is the name of this chatbot?",
+      },
+      {
+        role: "model",
+        parts:
+          "The name of this chatbot is Gemini. It is created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer.",
+      },
+      {
+        role: "user",
+        parts: "What is the name of this chatbot?",
+      },
+      {
+        role: "model",
+        parts:
+          "The name of this chatbot is Gemini. It is created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer.",
+      },
+      {
+        role: "user",
+        parts: "What is the name of this chatbot?",
+      },
+      {
+        role: "model",
+        parts:
+          "The name of this chatbot is Gemini. It is created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer.",
+      },
+      {
+        role: "user",
+        parts: "What is the name of this chatbot?",
+      },
+      {
+        role: "model",
+        parts:
+          "The name of this chatbot is Gemini. It is created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer.",
+      },
+      {
+        role: "user",
+        parts: "What is the name of this chatbot?",
+      },
+      {
+        role: "model",
+        parts:
+          "The name of this chatbot is Gemini. It is created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer.",
+      },
+      {
+        role: "user",
+        parts: "What is the name of this chatbot?",
+      },
+      {
+        role: "model",
+        parts:
+          "The name of this chatbot is Gemini. It is created by Aditya. You can follow him on github by clicking on this link his github is adiyadav123. He is software developer and web developer.",
+      },
+      {
+        role: "user",
+        parts: "What is the github link of your creator?",
+      },
+      {
+        role: "model",
+        parts:"https://github.com/adiyadav123",
+      }
+    ],
+    generationConfig: {
+      maxOutputTokens: 100,
+    },
+  });
+  try {
+    const result = await chat.sendMessageStream(prompt);
+    input.value = "";
+    const response = await result.response;
+    var text = await response.text();
+  } catch (error) {
+    loader.style.visibility = "hidden";
+    prompt = "";
+    input.value = "";
+    message_area.scrollTop = message_area.scrollHeight - message_area.clientHeight; // Navigate to the top of currently added innerHTML
+    return message_area.innerHTML += `<div class="message ai-message">
+  <div class="img"><img src="/logo.png" alt=""></div>
+  <div class="text">${error.message}</div>
+</div>`;
+     
+  }
+  
+    const formattedText = text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+    const formattedTextWithItalic = formattedText.replace(
+      /\*(.*?)\*/g,
+      "<i>$1</i>"
+    ); // Add this line to consider text with one asterisk as italic
+
+    // Convert links to anchor tags and color them blue
+    const formattedTextWithLinks = formattedTextWithItalic.replace(
+      /(https?:\/\/[^\s]+)/g,
+      (match) => {
+        if (match === "https://github.com.adiyadav123.") {
+          return '<a href="https://github.com/adiyadav123" style="color: blue;" target=_blank>https://github.com/adiyadav123</a>';
+        } else {
+          return '<a href="' + match + '" style="color: blue;" target=_blank>' + match + '</a>';
+        }
+      }
+    );
+    loader.style.visibility = "hidden";
+    message_area.innerHTML += `<div class="message ai-message">
+    <div class="img"><img src="/logo.png" alt=""></div>
+    <div class="text">${formattedTextWithLinks}</div>
+  </div>`;
+    message_area.scrollTop = message_area.scrollHeight - message_area.clientHeight; // Navigate to the top of currently added innerHTML
+  });
+    </script>
+  </body>
+</html>
